@@ -83,7 +83,6 @@ class numericalResolution():
 
     #Directly solve the system using matrix inversion with preconditioning (LU factorization)
     def resolveInversion(self):
-        print(f'Inside resolveInversion')
         L, U = self.preconditionner(self.A)
         M = np.dot(L,U)
         VAR = np.linalg.solve(self.A,self.b)

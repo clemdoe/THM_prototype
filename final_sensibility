@@ -1,0 +1,122 @@
+from SALib.sample import morris
+from SALib.analyze import morris as morris_analyze
+from THM_main import Version5_THM_prototype
+from iapws import IAPWS97
+import numpy as np
+from THM_main import plotting
+import pandas as pd
+import matplotlib.pyplot as plt
+
+def solveur(Pout, r_c, e_c, r_f, c, h, Tin, uin, q):
+
+    print("Pout = ", Pout)
+    print("r_c = ", r_c)
+    print("e_c = ", e_c)
+    print("r_f = ", r_f)
+    print("c = ", c)
+    print("h = ", h)
+    print("Tin = ", Tin)
+    print("uin = ", uin)
+    print("q = ", q)
+
+
+    case_name = "PSBT BenchMark Ex1 12223"
+    #User choice:
+    solveConduction = False
+    plot_at_z1 = []
+
+    ########## Thermal hydraulics parameters ##########
+    ## Geometric parameters
+    canalType = "square"
+    waterRadius = c # m
+    fuelRadius = r_f # m : fuel rod radius
+    gapRadius = fuelRadius + e_c  # m : expansion gap radius : "void" between fuel and clad - equivalent to inner clad radius
+    cladRadius =  r_c # m : clad external radius
+    height = h # m : height : active core height in BWRX-300 SMR
+
+    ## Fluid parameters
+    pOutlet = Pout # Pa
+    tInlet = Tin #K
+    u_inlet = uin #m/s
+    pressureDrop = 186737 #Pa/m
+    falsePInlet = pOutlet + height * pressureDrop
+    rhoInlet = IAPWS97(T = tInlet, P = falsePInlet*10**(-6)).rho #kg/m3
+    flowArea = waterRadius ** 2 - np.pi * cladRadius ** 2
+    qFlow = u_inlet * rhoInlet * flowArea # kg/m^2/s
+
+    ## Meshing parameters:
+    If = 8
+    I1 = 3
+    Iz1 = 70 # number of control volumes in the axial direction
+
+    ## Thermalhydraulics correlation
+    voidFractionCorrel = "EPRIvoidModel"    #choice between 'EPRIvoidModel' and 'GEramp' and 'modBestion' and 'HEM1'
+    frfaccorel = "Churchill"                #choice between 'Churchill' and 'blasius' 'base'
+    P2Pcorel = "lockhartMartinelli"                       #choice between 'HEM1' and 'HEM2' and 'MNmodel'
+    numericalMethod = 'FVM'            #choice between 'BiCG', 'BiCGStab', 'GaussSiedel' and 'FVM'
+
+    ############ Nuclear Parameters ###########
+    ## Fission parameters
+
+    #qFiss = 1943301220 # W/m3
+    ## Material parameters
+    kFuel = 4.18 # W/m.K, TECHNICAL REPORTS SERIES No. 59 : Thermal Conductivity of Uranium Dioxide, IAEA, VIENNA, 1966
+    Hgap = 10000
+    kClad = 21.5 # W/m.K, Thermal Conductivity of Zircaloy-2 (as used in BWRX-300) according to https://www.matweb.com/search/datasheet.aspx?MatGUID=eb1dad5ce1ad4a1f9e92f86d5b44740d
+    # k_Zircaloy-4 = 21.6 W/m.K too so check for ATRIUM-10 clad material but should have the same thermal conductivity
+    ########## Algorithm parameters ###########
+
+    Qfiss1 = []
+    for i in range(Iz1): 
+        Qfiss1.append(q)
+
+    case0 = Version5_THM_prototype(case_name, canalType,
+                    waterRadius, fuelRadius, gapRadius, cladRadius, height, tInlet, pOutlet, qFlow, Qfiss1,
+                    kFuel, Hgap, kClad, Iz1, If, I1, plot_at_z1, solveConduction,
+                    dt = 0, t_tot = 0, frfaccorel = frfaccorel, P2Pcorel = P2Pcorel, voidFractionCorrel = voidFractionCorrel, numericalMethod = numericalMethod)
+    
+    return case0.convection_sol.voidFraction[-1][-1], case0.convection_sol.P[-1][0], case0.convection_sol.T_water[-1], case0.convection_sol.U[-1][-1]
+
+
+# Définition du problème
+problem = {
+    'num_vars': 9,
+    'names': ['Pout', 'r_c', 'e_c', 'r_f', 'c', 'h', 'Tin', 'uin', 'q'],
+    'bounds': [
+        [14719781.65, 14719782.65],      # Pout (Pa)
+        [0.009/2, 0.01/2],     # r_c (m)
+        [0.000001, 0.0000015],    # e_c (m)
+        [0.005/2, 0.006/2],    # r_f (m)
+        [0.01, 0.02],     # c (m)
+        [1, 2],       # h (m)
+        [592, 593],        # Tin (°C)
+        [4, 5],       # uin (m/s)
+        [5e8, 2e9]        # q (W/m3)
+    ],
+    'outputs': ['u_out', 'Pin', 'T_out', 'fraction_vide']
+}
+
+# Génération des échantillons
+param_values = morris.sample(problem, N=1000, num_levels=2)
+
+# Évaluation du modèle (à adapter)
+def evaluate(params):
+    results = {'u_out': [], 'Pin': [], 'T_out': [], 'fraction_vide': []}
+    for Pout, r_c, e_c, r_f, c, h, Tin, uin, q in params:
+        # Appel à votre solveur ici
+        output = solveur(Pout, r_c, e_c, r_f, c, h, Tin, uin, q)
+        
+        results['u_out'].append(output[0])
+        results['Pin'].append(output[1])
+        results['T_out'].append(output[2])
+        results['fraction_vide'].append(output[3])
+    
+    return results
+
+outputs = evaluate(param_values)
+
+# Analyse pour chaque sortie
+for output_name in problem['outputs']:
+    print(f"\nAnalyse Morris pour {output_name}:")
+    Si = morris_analyze.analyze(problem, param_values, outputs[output_name], print_to_console=True)
+    

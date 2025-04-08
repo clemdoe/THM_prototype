@@ -331,7 +331,6 @@ class statesVariables():
                         QUALITY = Xh * (tmp3 + tmp1 * (0.661 + tmp1 * (0.5085 - 0.3555 * tmp2 + tmp1 * (tmp3 - 0.25425 + tmp1 * (0.042375 - 0.0444375 * tmp2)))))
                         print(f'IF 6')
 
-                print(f'Quality: {QUALITY}')
                 if QUALITY >= 1.0:
                     return 0.99
                 else:
@@ -516,8 +515,6 @@ class statesVariables():
     #Get the positive and negative flow areas for a given cell (take into account the two-phase pressure multiplier and friction factor)
     def getAreas(self, i):
         if self.voidFractionTEMP[i] > - 0.001:
-            #/4
-            #/4
             A_chap_pos = self.areaMatrix[i-1] +  (self.getPhi2Phi(i-1)/4) * ((self.fTEMP[i-1] / self.D_h[i-1]) + (self.K_loss / self.Dz)) * self.DV
             A_chap_neg = self.areaMatrix[i] - (self.getPhi2Phi(i)/4) * ((self.fTEMP[i] / self.D_h[i]) + (self.K_loss / self.Dz)) * self.DV
             
