@@ -107,8 +107,7 @@ class DFMclass():
         self.DV = (self.height/self.nCells) * self.flowArea #Volume of the control volume m3
         
         if self.canalType == 'square':
-            print(f'cote: {self.cote}')
-            print(f'cladRadius: {self.cladRadius}')
+            
             self.Dh =  4 * self.flowArea / ( 2*np.pi * self.cladRadius) #2*self.cote +
             print(f'Dh: {self.Dh}')
         elif self.canalType == 'cylindrical':
@@ -172,14 +171,12 @@ class DFMclass():
     #Fission power
     def set_Fission_Power(self, Q):
         if self.dt == 0:
-            print(f'Fission power fluid')
             self.q__ = []
             for i in range(len(Q)):
                 #self.q__.append(Q[i])
                 self.q__.append((Q[i] * np.pi * self.fuelRadius**2) / self.areaMatrix[i]) #W/m3
             print(f'q__: {self.q__}')
         if self.dt != 0:
-            print(f'Fission power transient')
             t_final_q = 0
             self.q__ = np.zeros((len(self.timeList), len(Q)))
             for t, time in enumerate(self.timeList):
@@ -340,7 +337,7 @@ class DFMclass():
                 ci = 0,
                 ai = - areaMatrix[i],
                 bi = areaMatrix[i+1],
-                di = - (((rho_old[i+1]- rho_old[i])* self.g/2) * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2) / 2) + DI)
+                di = - (((rho_old[i+1]+ rho_old[i])* self.g/2) * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2) / 2) + DI)
             
                 VAR_VFM_Class.fillingOutsideBoundary(i, i-self.nFaces,
                 ai = - rho_old[i]*VAR_old[i-self.nFaces]*areaMatrix_old_2[i],
@@ -351,15 +348,13 @@ class DFMclass():
                 VAR_VFM_Class.set_ADi(i, ci = 0,
                 ai = - areaMatrix[i],
                 bi = areaMatrix[i+1],
-                di = - (((rho_old[i+1]- rho_old[i])* self.g/2) * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2)/ 2) + DI)
+                di = - (((rho_old[i+1]+ rho_old[i])* self.g/2) * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2)/ 2) + DI)
             
                 VAR_VFM_Class.fillingOutsideBoundary(i, i-self.nFaces,
                 ai = - rho_old[i]*VAR_old[i-self.nFaces]*areaMatrix_old_2[i],
                 bi = rho_old[i+1]*VAR_old[i+1-self.nFaces]*areaMatrix_old_1[i+1])
 
         
-        print(f'VAR_VFM_Class: {VAR_VFM_Class.A}')
-        print(f'VAR_VFM_Class: {VAR_VFM_Class.D}')
         self.FVM = VAR_VFM_Class
 
     #Create the enthalpy matrix resolution equation system
@@ -493,7 +488,7 @@ class DFMclass():
                 ci = 0,
                 ai = - areaMatrix[i],
                 bi = areaMatrix[i+1],
-                di = - ((rho_old[i+1]- rho_old[i])* self.g * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2) / 2) + DI + (self.rhoList[self.timeCount][i%self.nFaces] * areaMatrix[i] * self.velocityList[self.timeCount][i%self.nFaces] * (self.Dz / self.dt)))
+                di = - ((rho_old[i+1]+ rho_old[i])* self.g * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2) / 2) + DI + (self.rhoList[self.timeCount][i%self.nFaces] * areaMatrix[i] * self.velocityList[self.timeCount][i%self.nFaces] * (self.Dz / self.dt)))
             
                 VAR_VFM_Class.fillingOutsideBoundary(i, i-self.nFaces,
                 ai = - rho_old[i]*VAR_old[i-self.nFaces]*areaMatrix_old_2[i] + rho_old[i]*areaMatrix[i]*(self.Dz/self.dt),
@@ -504,7 +499,7 @@ class DFMclass():
                 VAR_VFM_Class.set_ADi(i, ci = 0,
                 ai = - areaMatrix[i],
                 bi = areaMatrix[i+1],
-                di = - ((rho_old[i+1]- rho_old[i])* self.g * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2)/ 2) + DI + (self.rhoList[self.timeCount][i%self.nFaces] * areaMatrix[i] * self.velocityList[self.timeCount][i%self.nFaces] * (self.Dz / self.dt)))
+                di = - ((rho_old[i+1]+ rho_old[i])* self.g * self.DV * ((self.poro[i%self.nFaces]+ self.poro[(i+1)%self.nFaces])/2)/ 2) + DI + (self.rhoList[self.timeCount][i%self.nFaces] * areaMatrix[i] * self.velocityList[self.timeCount][i%self.nFaces] * (self.Dz / self.dt)))
             
                 VAR_VFM_Class.fillingOutsideBoundary(i, i-self.nFaces,
                 ai = - rho_old[i]*VAR_old[i-self.nFaces]*areaMatrix_old_2[i] + rho_old[i]*areaMatrix[i]*(self.Dz/self.dt),
@@ -665,8 +660,6 @@ class DFMclass():
 
                 for k in range(self.maxOuterIteration):
                     self.createSystemVelocityPressureTransient()
-                    """ print(f'A: {self.FVM.A}')
-                    print(f'D: {self.FVM.D}') """
                     resolveSystem = numericalResolution(self.FVM,self.mergeVar(self.U[-1], self.P[-1]), self.epsInnerIteration, self.maxInnerIteration, self.numericalMethod)
                     Utemp, Ptemp = self.splitVar(resolveSystem.x)
                     
@@ -680,9 +673,6 @@ class DFMclass():
                     Htemp = resolveSystem.x
 
                     self.H.append(Htemp)
-                    #print(f'H interation number: {k}: {self.H}')
-                    #print(f'U interation number: {k}: {self.U}')
-                    #print(f'P interation number: {k}: {self.P}')
                     updateVariables = statesVariables(self.U[-1], self.P[-1], self.H[-1], self.voidFraction[-1], self.D_h, self.areaMatrix, self.DV, self.voidFractionCorrel, self.frfaccorel, self.P2Pcorel, self.Dz, self.q__, self.fuelRadius, self.cote/2)
                     updateVariables.updateFields()
 

@@ -136,7 +136,6 @@ Twater = [(1-datadict['alpha.vapour'][i]) * datadict['T.liquid'][i] + datadict['
 print(datadict['alpha.vapour'])
 z_gf = np.linspace(0, 3.81, len(datadict['alpha.vapour']))
 
-
 print("temperature profil for THM_p", case2.convection_sol.T_water)
 print("temperature profil for TwoPorFlow", x_T)
 print("temperature profile for genfoam", datadict['T.liquid'])

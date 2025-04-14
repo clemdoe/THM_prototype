@@ -472,6 +472,7 @@ class statesVariables():
         elif self.frfaccorel == 'Churchill': #Validated
             #old 0.4 When Ra increased pressure drop increase
             Ra = 0.8 * (10**(-6)) #Roughness
+            #Ra = 1.0 * (10**(-6)) #Roughness
             #Ra = 0.4 * (10**(-6)) #Roughness
             R = Ra / self.D_h[i]
             frict=8*(((8.0/Re)**12)+((2.475*np.log(((7/Re)**0.9)+0.27*R))**16+(37530/Re)**16)**(-1.5))**(1/12)
