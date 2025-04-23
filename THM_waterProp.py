@@ -310,26 +310,21 @@ class statesVariables():
                     if xeq <= 0.0:
                         if xeq <= -xd:
                             QUALITY = 0.0       
-                            print(f'IF 2')
                         else:
                             tmp1 = 1 + xeq / xd
                             tmp2 = tmp1**2
                             QUALITY = xd * tmp2 * (0.1 + 0.087 * tmp1 + 0.05 * tmp2)
-                            print(f'IF 3')
                     elif Xh > xd:
                         if xeq >= 2 * xd:
                             QUALITY = xeq
-                            print(f'IF 4')
                         else:
                             tmp1 = xeq / xd
                             QUALITY = xd * (0.237 + tmp1 * (0.661 + tmp1 * (0.153 + tmp1 * (-0.01725 - tmp1 * 0.0020625))))
-                            print(f'IF 5')
                     else:
                         tmp1 = xeq / Xh
                         tmp2 = xd / Xh
                         tmp3 = 0.237 * tmp2
                         QUALITY = Xh * (tmp3 + tmp1 * (0.661 + tmp1 * (0.5085 - 0.3555 * tmp2 + tmp1 * (tmp3 - 0.25425 + tmp1 * (0.042375 - 0.0444375 * tmp2)))))
-                        print(f'IF 6')
 
                 if QUALITY >= 1.0:
                     return 0.99
@@ -471,9 +466,9 @@ class statesVariables():
             #return 0.316 * Re**(-0.25)
         elif self.frfaccorel == 'Churchill': #Validated
             #old 0.4 When Ra increased pressure drop increase
-            Ra = 0.8 * (10**(-6)) #Roughness
+            #Ra = 0.8 * (10**(-6)) #Roughness
             #Ra = 1.0 * (10**(-6)) #Roughness
-            #Ra = 0.4 * (10**(-6)) #Roughness
+            Ra = 0.4 * (10**(-6)) #Roughness
             R = Ra / self.D_h[i]
             frict=8*(((8.0/Re)**12)+((2.475*np.log(((7/Re)**0.9)+0.27*R))**16+(37530/Re)**16)**(-1.5))**(1/12)
             return frict

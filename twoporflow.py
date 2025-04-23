@@ -71,14 +71,6 @@ case2 = Version5_THM_prototype("Initialization of BWR Pincell equivalent canal",
                             solveConduction, dt = 0, t_tot = 0, frfaccorel = frfaccorel, P2Pcorel = P2Pcorel, voidFractionCorrel = 'EPRIvoidModel',
                             numericalMethod = numericalMethod)
 
-print(f'P_rgh = {case2.convection_sol.P[-1][-1] - case2.convection_sol.rho[-1][-1]*height*9.81} Pa')
-print(f'P = {case2.convection_sol.P[-1]} Pa')
-print(f'rgh = {case2.convection_sol.rho[-1][-1] * 9.81 * height} Pa')
-
-z_p, x_p =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_Pressure_axial.txt', delimiter='*', unpack=True)
-z_T, x_T =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_Tliq_axial.txt', delimiter='*', unpack=True)
-z_VF, x_VF =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_VoidFraction_axial.txt', delimiter='*', unpack=True)
-x_T = [x_T[i] + 273.15 for i in range(len(x_T))]
 
 def read_files_in_directory(directory_path):
     data_dict = {}
@@ -136,31 +128,33 @@ Twater = [(1-datadict['alpha.vapour'][i]) * datadict['T.liquid'][i] + datadict['
 print(datadict['alpha.vapour'])
 z_gf = np.linspace(0, 3.81, len(datadict['alpha.vapour']))
 
-print("temperature profil for THM_p", case2.convection_sol.T_water)
-print("temperature profil for TwoPorFlow", x_T)
-print("temperature profile for genfoam", datadict['T.liquid'])
+
+z_p, x_p =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_Pressure_axial.txt', delimiter='*', unpack=True)
+z_T, x_T =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_Tliq_axial.txt', delimiter='*', unpack=True)
+z_VF, x_VF =np.loadtxt('BWR\THM_prototype\Python-Graphs-twoporflow\SingleRod_VoidFraction_axial.txt', delimiter='*', unpack=True)
+x_T = [x_T[i] + 273.15 for i in range(len(x_T))]
 
 z_p = [z_p[i] * 0.1524 for i in range(len(x_p))]
 z_T = [z_T[i] * 0.1524 for i in range(len(x_T))]
 z_VF = [z_VF[i] * 0.1524 for i in range(len(x_VF))]
 
 fig, ax1 = plt.subplots()
-ax1.plot(case2.convection_sol.T_water, z_T, label='THM_p',color='r', alpha=0.7, linewidth=3)
-ax1.plot(x_T,z_T, label='TwoPorFlow',color='b', alpha=0.7, linewidth=3)
-ax1.plot(Twater, z_gf, label='GeN-Foam',color='g', alpha=0.7, linewidth=3)
-ax1.set_ylabel("Axial position in m")
-ax1.set_xlabel("Temperature in K")
-ax1.set_title("Temperature profile along the axial direction")
+ax1.step(z_T,case2.convection_sol.T_water , label='THM_p',color='r')
+ax1.step(z_T , x_T, label='TWOPORFLOW',color='b')
+ax1.step(z_gf, Twater, label='GeN-Foam',color='g')
+ax1.set_xlabel("Axial position in m")
+ax1.set_ylabel("Temperature in K")
+#ax1.set_title("Temperature profile along the axial direction")
 ax1.grid()
 ax1.legend(loc="best")
 
 fig, ax2 = plt.subplots()
-ax2.plot(case2.convection_sol.voidFraction[-1], z_VF, label='THM_p',color='r', alpha=0.7, linewidth=3)
-ax2.plot(x_VF,z_VF, label='TwoPorFlow',color='b', alpha=0.7, linewidth=3)
-ax2.plot(datadict['alpha.vapour'], z_gf, label='GeN-Foam',color='g', alpha=0.7, linewidth=3)
-ax2.set_ylabel("Axial position in m")
-ax2.set_xlabel("Void fraction")
-ax2.set_title("Void fraction profile along the axial direction")
+ax2.step(z_VF,case2.convection_sol.voidFraction[-1], label='THM_p',color='r')
+ax2.step(z_VF, x_VF, label='TwoPorFlow',color='b')
+ax2.step(z_gf, datadict['alpha.vapour'], label='GeN-Foam',color='g')
+ax2.set_xlabel("Axial position in m")
+ax2.set_ylabel("Void fraction")
+#ax2.set_title("Void fraction profile along the axial direction")
 ax2.grid()
 ax2.legend(loc="best")
 
@@ -168,18 +162,73 @@ fig, ax3 = plt.subplots()
 ax3.plot(case2.convection_sol.U[-1], case2.convection_sol.z_mesh)
 ax3.set_ylabel("Axial position in m")
 ax3.set_xlabel("Velocity in m/s")
-ax3.set_title("Velocity profile along the axial direction")
+#ax3.set_title("Velocity profile along the axial direction")
 ax3.grid()
 ax3.legend(loc="best")
 
 fig, ax4 = plt.subplots()
-ax4.plot(case2.convection_sol.P[-1], z_p, label='THM_p',color='r', alpha=0.7, linewidth=3)
-ax4.plot(x_p,z_p, label='TwoPorFlow',color='b', alpha=0.7, linewidth=3)
-ax4.plot(datadict['p'], z_gf, label='GeN-Foam',color='g', alpha=0.7, linewidth=3)
-ax4.set_ylabel("Axial position in m")
-ax4.set_xlabel("Pressure in Pa")
-ax4.set_title("Pressure profile along the axial direction")
+ax4.step(z_p, case2.convection_sol.P[-1], label='THM_p', color='r')
+ax4.step(z_p, x_p, label='TwoPorFlow', color='b')
+ax4.step(z_gf, datadict['p'], label='GeN-Foam',color='g')
+ax4.set_xlabel("Axial position in m")
+ax4.set_ylabel("Pressure in Pa")
+#ax4.set_title("Pressure profile along the axial direction")
 ax4.grid()
 ax4.legend(loc="best")
 
 plt.show()
+
+# Charger les données
+file_path = rf'BWR\THM_prototype\graph_axial.txt'
+data = pd.read_csv(file_path, skipinitialspace=True)
+
+# Afficher les premières lignes pour vérification
+print("Aperçu des données:")
+print(data.head())
+
+# Informations générales sur les données
+print("\nInformations sur les données:")
+print(data.info())
+
+#transformer les données en un dictionnaire simple:
+data_TPF = data.to_dict(orient='list')
+
+Dh = case2.convection_sol.Dh
+roughness = 1.0 * (10**(-6))
+
+#liste des paramètres dans le dictionnaire data_TPF:
+#zPosition, Void, BoronCon, Pressure, TempVap, TempLiq, TempFuelC, TempStru, VelzVap, VelzLiq, Time
+
+data_TPF['TSat'] = [IAPWS97(P = data_TPF['Pressure'][i]/1e6, x = 0).T for i in range(len(data_TPF['Pressure']))]
+data_TPF['rhoLiq'] = [IAPWS97(T = data_TPF['TSat'][i], x = 0).rho for i in range(len(data_TPF['Pressure']))]
+data_TPF['rhoVap'] = [IAPWS97(T = data_TPF['TSat'][i], x = 1).rho for i in range(len(data_TPF['Pressure']))]
+data_TPF['muLiq'] = [IAPWS97(T = data_TPF['TSat'][i], x = 0).mu for i in range(len(data_TPF['Pressure']))]
+data_TPF['muVap'] = [IAPWS97(T = data_TPF['TSat'][i], x = 1).mu for i in range(len(data_TPF['Pressure']))]
+data_TPF['ReLiq'] = [data_TPF['rhoLiq'][i] * data_TPF['VelzLiq'][i] * Dh / data_TPF['muLiq'][i] for i in range(len(data_TPF['Pressure']))]
+data_TPF['ReVap'] = [data_TPF['rhoVap'][i] * data_TPF['VelzVap'][i] * Dh / data_TPF['muVap'][i] for i in range(len(data_TPF['Pressure']))]
+data_TPF['w'] = [(((data_TPF['ReLiq'][i] +  data_TPF['ReVap'][i]) * 0.5) - 1300)/2000 for i in range(len(data_TPF['Pressure']))]
+data_TPF['C_LM'] = [20*data_TPF['w'][i] + 5*(1-data_TPF['w'][i]) for i in range(len(data_TPF['Pressure']))]
+data_TPF['fLiq'] = [8*((8/data_TPF['ReLiq'][i])**12 + 1/((2.457*np.log(1/((7/data_TPF['ReLiq'][i])**0.9 + 0.27*(roughness / Dh))))**16+(37530/data_TPF['ReLiq'][i])**16)**(3/2))**(1/12) for i in range(len(data_TPF['Pressure']))]
+data_TPF['fVap'] = [8*((8/data_TPF['ReVap'][i])**12 + 1/((2.457*np.log(1/((7/data_TPF['ReVap'][i])**0.9 + 0.27*(roughness / Dh))))**16+(37530/data_TPF['ReVap'][i])**16)**(3/2))**(1/12) for i in range(len(data_TPF['Pressure']))]
+data_TPF['FLiq'] = [data_TPF['fLiq'][i] * data_TPF['rhoLiq'][i] * data_TPF['VelzLiq'][i]*(1-data_TPF['Void'][i])**2 / (2*Dh) for i in range(len(data_TPF['Pressure']))]
+data_TPF['FVap'] = [data_TPF['fVap'][i] * data_TPF['rhoVap'][i] * data_TPF['VelzVap'][i]*(1-data_TPF['Void'][i])**2 / (2*Dh) for i in range(len(data_TPF['Pressure']))]
+data_TPF['FLV'] = [data_TPF['FLiq'][i]*data_TPF['VelzLiq'][i] + data_TPF['FVap'][i]*data_TPF['VelzVap'][i] + data_TPF['C_LM'][i]*(1-data_TPF['Void'][i])*data_TPF['Void'][i]*np.sqrt(data_TPF['fVap'][i] * data_TPF['fLiq'][i] * data_TPF['rhoLiq'][i] * data_TPF['rhoVap'][i])*data_TPF['VelzVap'][i]/(2*Dh) for i in range(len(data_TPF['Pressure']))]
+
+
+""" for i in range(len(case2.convection_sol.U[-1])):
+    print(f'index {i} :')
+    print(case2.convection_sol.areaMatrix_1[-1][i])
+    print(case2.convection_sol.areaMatrix_1[-1][i]/case2.convection_sol.areaMatrix)
+    print(case2.convection_sol.Dz)
+    print(case2.convection_sol.U[-1][i])
+    print(case2.convection_sol.rho[-1][i])
+    print(case2.convection_sol.U[-1][i]**2 * case2.convection_sol.rho[-1][i])
+    print((case2.convection_sol.areaMatrix_1[-1][i]/case2.convection_sol.areaMatrix - 1)/case2.convection_sol.Dz)
+    print((case2.convection_sol.areaMatrix_1[-1][i]/case2.convection_sol.areaMatrix - 1)/case2.convection_sol.Dz * (case2.convection_sol.U[-1][i]**2 * case2.convection_sol.rho[-1][i]))
+ """
+
+pressureDrop_THM = [(case2.convection_sol.areaMatrix_1[-1][i]/case2.convection_sol.flowArea - 1)/case2.convection_sol.Dz * (case2.convection_sol.U[-1][i]**2 * case2.convection_sol.rho[-1][i]) for i in range(len(case2.convection_sol.U[-1]))]
+print(pressureDrop_THM)
+print(f'Terme de chute de pression:')
+for i in range(len(data_TPF['Pressure'])):
+    print(f'TPF: {data_TPF["FLV"][i]} Pa, THM: {pressureDrop_THM[i]} Pa')

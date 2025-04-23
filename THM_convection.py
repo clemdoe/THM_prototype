@@ -101,7 +101,7 @@ class DFMclass():
         self.qFlow = qFlow #kg/s
         self.rhoInlet = IAPWS97(T = self.tInlet, P = falsePInlet*10**(-6)).rho #kg/m3
         self.uInlet = self.qFlow / (self.flowArea * self.rhoInlet) #m/s
-        print('Velocity at the inlet: ', self.uInlet)
+        #print('Velocity at the inlet: ', self.uInlet)
         #print(f'uInlet: {self.uInlet}')
 
         self.DV = (self.height/self.nCells) * self.flowArea #Volume of the control volume m3
@@ -109,7 +109,7 @@ class DFMclass():
         if self.canalType == 'square':
             
             self.Dh =  4 * self.flowArea / ( 2*np.pi * self.cladRadius) #2*self.cote +
-            print(f'Dh: {self.Dh}')
+            #print(f'Dh: {self.Dh}')
         elif self.canalType == 'cylindrical':
             self.Dh = 4 * self.flowArea / (np.pi * self.waterRadius*2 + np.pi * self.cladRadius*2)
 
@@ -135,13 +135,13 @@ class DFMclass():
             self.D_h.append(self.Dh * self.poro[i]**2)
 
 
-        self.epsInnerIteration = 1e-3
+        self.epsInnerIteration = 1e-4
         self.maxInnerIteration = 1000
         if self.numericalMethod == 'BiCGStab' or self.numericalMethod == 'BiCG':
             self.sousRelaxFactor = 0.8
         else:
             self.sousRelaxFactor = 1
-        self.epsOuterIteration = 1e-3
+        self.epsOuterIteration = 1e-4
         self.maxOuterIteration = 1000
 
         #Universal constant
@@ -377,14 +377,14 @@ class DFMclass():
 
 
         i = -1
-        DI = (1/2) * (P_old[i]*areaMatrix[i] - P_old[i-1]*areaMatrix[i-1]) * ((U_old[i]+ ((epsilon_old[i] * (rho_l_old[i] - rho_g_old[i]) * V_gj_old[i])/ rho_old[i]))+ (U_old[i-1]+ ((epsilon_old[i-1] * (rho_l_old[i-1] - rho_g_old[i-1]) * V_gj_old[i-1])/ rho_old[i-1]) ) )
+        DI = (1/2) * (P_old[i-1]*areaMatrix[i-1] - P_old[i]*areaMatrix[i]) * ((U_old[i]+ ((epsilon_old[i] * (rho_l_old[i] - rho_g_old[i]) * V_gj_old[i])/ rho_old[i]))+ (U_old[i-1]+ ((epsilon_old[i-1] * (rho_l_old[i-1] - rho_g_old[i-1]) * V_gj_old[i-1])/ rho_old[i-1]) ) )
         DI2 = - (epsilon_old[i]*rho_l_old[i]*rho_g_old[i]*Dhfg[i]*V_gj_old[i]*areaMatrix[i]/rho_old[i]) + (epsilon_old[i-1]*rho_l_old[i-1]*rho_g_old[i-1]*Dhfg[i-1]*V_gj_old[i-1]*areaMatrix[i-1]/rho_old[i-1])
         DM1 = self.q__[i-1] * self.DV * (self.poro[i]) + DI + DI2
         VAR_VFM_Class = FVM(A00 = 1, A01 = 0, Am0 = - rho_old[-2] * U_old[-2] * areaMatrix[-2], Am1 = rho_old[-1] * U_old[-1] * areaMatrix[-1], D0 = self.hInlet, Dm1 = DM1, N_vol = self.nFaces, H = self.height)
         VAR_VFM_Class.boundaryFilling()
         for i in range(1,self.nFaces -1):
             #Inside the enthalpy submatrix
-            DI = (1/2) * (P_old[i]*areaMatrix[i] - P_old[i-1]*areaMatrix[i-1]) * ((U_old[i]+ ((epsilon_old[i] * (rho_l_old[i] - rho_g_old[i]) * V_gj_old[i])/ rho_old[i]))+ (U_old[i-1]+ ((epsilon_old[i-1] * (rho_l_old[i-1] - rho_g_old[i-1]) * V_gj_old[i-1])/ rho_old[i-1]) ) )
+            DI = (1/2) * (P_old[i-1]*areaMatrix[i-1] - P_old[i]*areaMatrix[i]) * ((U_old[i]+ ((epsilon_old[i] * (rho_l_old[i] - rho_g_old[i]) * V_gj_old[i])/ rho_old[i]))+ (U_old[i-1]+ ((epsilon_old[i-1] * (rho_l_old[i-1] - rho_g_old[i-1]) * V_gj_old[i-1])/ rho_old[i-1]) ) )
             DI2 = - (epsilon_old[i]*rho_l_old[i]*rho_g_old[i]*Dhfg[i]*V_gj_old[i]*areaMatrix[i]/rho_old[i]) + (epsilon_old[i-1]*rho_l_old[i-1]*rho_g_old[i-1]*Dhfg[i-1]*V_gj_old[i-1]*areaMatrix[i-1]/rho_old[i-1])
             VAR_VFM_Class.set_ADi(i, ci =  - rho_old[i-1] * U_old[i-1] * areaMatrix[i-1],
                 ai = rho_old[i] * U_old[i] * areaMatrix[i],
@@ -515,8 +515,8 @@ class DFMclass():
 
     #Checking for convergence
     def testConvergence(self, k):#change rien et return un boolean
-        print(f'Convergence test, residuals: epsilon: {self.EPSresiduals[-1]}, rho: {self.rhoResiduals[-1]}, xTh: {self.xThResiduals[-1]}')
-        if self.EPSresiduals[-1] < self.epsInnerIteration and self.rhoResiduals[-1] < self.epsInnerIteration: #and self.xThResiduals[-1] < 1e-3 :
+        print(f'Convergence test number {k}, RES: errEPS: {self.EPSresiduals[-1]}, errRHO: {self.rhoResiduals[-1]}, errQua: {self.xThResiduals[-1]}')
+        if self.EPSresiduals[-1] < self.epsOuterIteration and self.rhoResiduals[-1] < self.epsOuterIteration: #and self.xThResiduals[-1] < 1e-3 :
             return True
         else:
             return False
@@ -568,7 +568,7 @@ class DFMclass():
         self.rhoInlet = IAPWS97(T = self.tInlet, P = self.P[-1][0]*10**(-6)).rho #kg/m3
         self.uInlet = self.qFlow / (self.flowArea * self.rhoInlet) #m/s
         #Update hInlet
-        print(f"uInlet:{self.uInlet}")
+        #print(f"uInlet:{self.uInlet}")
         self.hInlet = IAPWS97(T = self.tInlet, P = self.P[-1][0]*10**(-6)).h*1000 #J/kg
 
     #Main function to solve the drift flux model

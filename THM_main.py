@@ -97,15 +97,15 @@ class Version5_THM_prototype:
         self.convection_sol.set_Fission_Power(self.Qfiss)
         # Resolve the DFM
         self.convection_sol.resolveDFM()
-        print(f'Pressure: {self.convection_sol.P[-1]} Pa')
-        print(f'Enthalpy: {self.convection_sol.H[-1]} J/kg')
-        print(f'Void fraction: {self.convection_sol.voidFraction[-1]}')
-        print(f'Density: {self.convection_sol.rho[-1]} kg/m^3')
-        print(f'DV: {self.convection_sol.DV}')
+        #print(f'Pressure: {self.convection_sol.P[-1]} Pa')
+        #print(f'Enthalpy: {self.convection_sol.H[-1]} J/kg')
+        #print(f'Void fraction: {self.convection_sol.voidFraction[-1]}')
+        #print(f'Density: {self.convection_sol.rho[-1]} kg/m^3')
+        #print(f'DV: {self.convection_sol.DV}')
         if self.solveConduction:
             self.Tsurf = self.convection_sol.compute_T_surf()
-            print(f'Temperature at the surface: {self.Tsurf} K')
-            print(f'Temperature of water: {self.convection_sol.T_water} K')
+            #print(f'Temperature at the surface: {self.Tsurf} K')
+            #print(f'Temperature of water: {self.convection_sol.T_water} K')
 
         if self.solveConduction:
             # Prepare and solve 1D radial heat conduction in the fuel rod, given a Clad surface temperature as a bondary condition 
@@ -114,11 +114,7 @@ class Version5_THM_prototype:
             self.get_Tfuel_surface() # store in the T_fuel_surface attribute the fuel surface temperature computed
 
             # extend to Twater : adding a mesh point corresponding to the middle of the canal in the plotting array, add rw to the bounds array and add Twater to the results array
-            print(f'len(self.convection_sol.z_mesh): {len(self.convection_sol.z_mesh)}')
-            print(f'len of self.T_distributions_axial: {len(self.T_distributions_axial)}')
-            print(f'len of self.convection_sol.T_water: {len(self.convection_sol.T_water)}')
             for index_z in range(len(self.convection_sol.z_mesh)):
-                print(f'index_z: {index_z}')
                 self.T_distributions_axial[index_z].extend_to_canal_visu(rw = self.convection_sol.wall_dist, Tw = self.convection_sol.T_water[index_z])
                 
             if self.plot_results:
