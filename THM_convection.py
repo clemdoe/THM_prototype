@@ -28,7 +28,7 @@ class DFMclass():
         """
         Attributes:
         - nFaces: Number of discretized cells.
-        - pOutlet (Pa), tInlet (K): Inlet velocity, outlet pressure, and inlet enthalpy.
+        - pOutlet (Pa), tInlet (K): Inlet velocity, outle t pressure, and inlet enthalpy.
         - qFlow: Mass flow rate of the fluid (kg/s).
         - height (m), fuelRadius (m), cladRadius (m): Geometry of the channel (length, fuel, and clad radii).
         - cote: Channel width or distance, depending on the geometry.
