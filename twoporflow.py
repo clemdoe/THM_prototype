@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import re
 
-case_name = "MPHYS AT10"
+case_name = "MPHYS AT10 TWOPORFLOW"
 #User choice:
 solveConduction = True
 plot_at_z1 = []
